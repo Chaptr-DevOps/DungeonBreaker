@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dungeon Breaker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-image: url('https://maynemenu.wordpress.com/wp-content/uploads/2013/04/dungeon-demon_wide.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-repeat: no-repeat;
+            color: white;
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+        }
+
+        .game-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            gap: 20px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            min-height: 90vh;
+            margin-top: 2vh;
+        }
+
+        .left-panel {
+            flex: 0 0 200px;
+        }
+
+        .center-panel {
+            flex: 1;
+        }
+
+        .right-panel {
+            flex: 0 0 300px;
+        }
+
+        .room {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 20px 0;
+            justify-content: start;
+        }
+
+        .card {
+            width: 120px;
+            height: 190px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            background: transparent;
+            transition: transform 0.3s, box-shadow 0.3s;
+            perspective: 1000px;
+            margin: 5px;
+        }
+
+        .card:hover {
+            transform: translateY(-8px) rotateY(5deg);
+            box-shadow: 
+                -8px 8px 16px rgba(0,0,0,0.5),
+                -2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .card svg {
+            width: 100%;
+            height: 100%;
+            filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.3));
+        }
+
+        .status {
+            margin: 20px 0;
+            padding: 10px;
+            background: rgba(50, 50, 50, 0.8);
+            border-radius: 8px;
+            color: #eee;
+        }
+
+        .health-bar-container {
+            width: 100%;
+            height: 20px;
+            background: #444;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .health-bar {
+            height: 100%;
+            background: linear-gradient(to right, #ff4444, #ff6b6b);
+            transition: width 0.3s ease;
+        }
+
+        .weapon-area {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(60, 60, 60, 0.8);
+            border-radius: 8px;
+            color: #eee;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .weapon-container {
+            display: flex;
+            align-items: flex-start;
+            margin-top: 10px;
+        }
+
+        #equippedWeapon {
+            flex: 0 0 auto;
+            margin-right: 50px;
+        }
+
+        .monsters-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .monsters-on-weapon {
+            display: flex;
+            flex-direction: row;
+            gap: 0;
+            justify-content: flex-start;
+        }
+
+        .monsters-on-weapon .card {
+            margin-right: -40px;
+            max-width: 100px;
+            transition: transform 0.2s, margin-right 0.2s;
+        }
+
+        .monsters-on-weapon .card:hover {
+            transform: translateY(-10px);
+            z-index: 10;
+            margin-right: 0;
+        }
+
+        .monsters-on-weapon .card:last-child {
+            margin-right: 0;
+        }
+
+        #avoidRoom {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 20px;
+            width: 100%;
+            background: #673ab7;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        #avoidRoom:hover:not(:disabled) {
+            background: #7e57c2;
+            transform: translateY(-2px);
+        }
+
+        #avoidRoom:disabled {
+            cursor: not-allowed;
+            background: #555;
+            opacity: 0.7;
+        }
+
+        #gameMessages {
+            margin-top: 20px;
+            padding: 10px;
+            min-height: 50px;
+            color: #ff6e6e;
+            font-weight: bold;
+        }
+
+        .level-display {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #eee;
+            margin-top: 10px;
+        }
+
+        .leaderboard {
+            margin: 20px 0;
+            padding: 10px;
+            background: rgba(50, 50, 50, 0.8);
+            border-radius: 8px;
+            color: #eee;
+        }
+
+        .leaderboard h3 {
+            margin: 0 0 10px 0;
+            color: #eee;
+        }
+
+        .score-entry {
+            padding: 5px;
+            margin: 5px 0;
+            background: rgba(70, 70, 70, 0.9);
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .score-entry.new {
+            animation: highlight 2s ease-in-out;
+        }
+
+        @keyframes highlight {
+            0% { background-color: #673ab7; }
+            100% { background-color: rgba(70, 70, 70, 0.9); }
+        }
+
+        .lives-display {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        
+        h2, h3 {
+            color: #eee;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+        }
+
+        .rules-area {
+            margin: 20px 0;
+            padding: 10px;
+            background: rgba(60, 60, 60, 0.8);
+            border-radius: 8px;
+            color: #eee;
+            font-size: 0.9em;
+        }
+
+        .rules-content {
+            padding: 5px;
+        }
+
+        .rules-content ul {
+            padding-left: 20px;
+            margin: 5px 0;
+        }
+
+        .rules-content p {
+            margin: 8px 0 4px 0;
+        }
+
+        .special-card {
+            display: flex;
+            align-items: center;
+            margin: 5px 0;
+        }
+        .black-suit {
+            color: black;
+        }
+        .red-suit {
+            color: red;
+        }
+
+        .special-card-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: red;
+        }
+
+        .special-card-desc {
+            flex: 1;
+        }
+
+        /* Fix mobile layout */
+        @media screen and (max-width: 768px) {
+            /* Improved mobile layout */
+            body {
+                padding-bottom: 20px; /* Add padding to bottom of page */
+            }
+            
+            .game-container {
+                flex-direction: column;
+                padding: 10px;
+                gap: 5px;
+                margin-top: 0;
+                min-height: auto; /* Remove fixed height */
+                max-height: none; /* Allow content to expand */
+            }
+            
+            /* Reduce size of elements to fit on screen */
+            .status, .weapon-area, .rules-area, .leaderboard {
+                margin: 5px 0;
+                padding: 8px;
+            }
+            
+            /* Make cards smaller on mobile */
+            .card {
+                width: 80px;
+                height: 120px;
+                margin: 0;
+                justify-self: center;
+            }
+            
+            /* Ensure each card stretches appropriately */
+            .card svg {
+                width: 100%;
+                height: 100%;
+            }
+            
+            .monsters-on-weapon .card {
+                width: 60px;
+                height: 90px;
+                margin-right: -25px;
+            }
+            
+            /* Adjust typography */
+            h2 {
+                font-size: 1.2rem;
+                margin: 5px 0;
+            }
+            
+            h3, h4 {
+                font-size: 1rem;
+                margin: 5px 0;
+            }
+            
+            p, li {
+                font-size: 0.9rem;
+                margin: 3px 0;
+            }
+            
+            /* Make rules more compact */
+            .rules-content ul {
+                padding-left: 15px;
+                margin: 3px 0;
+            }
+            
+            /* Ensure room doesn't overflow */
+            .room {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                grid-template-rows: 1fr 1fr;
+                gap: 5px;
+                justify-items: center;
+                align-items: center;
+                width: 100%;
+                margin: 5px auto;
+            }
+            
+            /* Make the health bar smaller */
+            .health-bar-container {
+                height: 15px;
+                margin: 5px 0;
+            }
+            
+            /* Add scrolling for the game container if needed */
+            .game-container {
+                overflow-y: auto;
+            }
+        }
+        
+        /* Desktop only styles */
+        @media screen and (min-width: 769px) {
+            /* Always hide mobile elements on desktop */
+            .mobile-weapon-area, 
+            .avoid-button-container {
+                display: none !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            /* Reduce gaps between elements in mobile view */
+            .game-container {
+                grid-gap: 5px !important;
+            }
+            
+            .left-panel, .right-panel {
+                gap: 5px !important;
+                margin-bottom: 5px;
+            }
+            
+            .card {
+                margin-bottom: 5px !important;
+            }
+            
+            .controls-section {
+                margin-top: 5px !important;
+            }
+            
+            .mobile-controls {
+                gap: 5px !important;
+            }
+            
+            #gameMessages {
+                margin: 5px 0 !important;
+                display: none;
+            }
+            
+            .stats-bar {
+                margin-bottom: 5px !important;
+            }
+            
+            /* Ensure buttons are closer together */
+            button {
+                margin: 2px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <!-- 1. Health and level section -->
+        <div class="left-panel">
+            <div class="status">
+                <h2>Health: <span id="health">20</span>/20</h2>
+                <div class="health-bar-container">
+                    <div class="health-bar" id="healthBar" style="width: 100%"></div>
+                </div>
+                <p>Cards in Dungeon: <span id="dungeonCount">0</span></p>
+                <p class="level-display">Level: <span id="currentLevel">1</span></p>
+                <p class="lives-display">Lives: <span id="livesRemaining">3</span></p>
+            </div>
+            <button id="avoidRoom">Avoid Room</button>
+            <div id="gameMessages"></div>
+        </div>
+        
+        <!-- For mobile layout - will be hidden on desktop -->
+        <div class="mobile-weapon-area">
+            <div class="weapon-container">
+                <div class="weapon-section">
+                    <h4>Equipped Weapon:</h4>
+                    <div id="mobileEquippedWeapon"></div>
+                </div>
+                <div class="monsters-section">
+                    <h4>Monsters Slain:</h4>
+                    <div class="monsters-on-weapon" id="mobileMonstersOnWeapon"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 3. Current room section -->
+        <div class="center-panel">
+            <h2>Current Room</h2>
+            <div class="room" id="room"></div>
+            <div class="weapon-area">
+                <div class="weapon-container">
+                    <div class="weapon-section">
+                        <h4>Equipped Weapon:</h4>
+                        <div id="equippedWeapon"></div>
+                    </div>
+                    <div class="monsters-section">
+                        <h4>Monsters Slain:</h4>
+                        <div class="monsters-on-weapon" id="monstersOnWeapon"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- For mobile layout - will be hidden on desktop -->
+        <div class="avoid-button-container">
+            <button id="avoidRoom-mobile">Avoid Room</button>
+        </div>
+        
+        <!-- 5. Game rules and high scores -->
+        <div class="right-panel">
+            <div class="rules-area">
+                <h3>Game Rules</h3>
+                <div class="rules-content">
+                    <p><strong>Cards:</strong></p>
+                    <ul>
+                        <li><span class="black-suit">♣♠</span> - Monsters (damage = value)</li>
+                        <li><span class="red-suit">♦</span> - Weapons (power = value)</li>
+                        <li><span class="red-suit">♥</span> - Health Potions (restore = value)</li>
+                    </ul>
+                    
+                    <p><strong>Special Cards:</strong></p>
+                    <div id="specialCards">
+                        <!-- Dynamic content based on level -->
+                    </div>
+                    
+                    <p><strong>How to Play:</strong></p>
+                    <ul>
+                        <li>Choose 3 of 4 cards each turn</li>
+                        <li>Weapons can be used to defeat monsters of equal or lower value. If used on a monster of higher value, subtract the weapon's power from the monster's value and remove the health from the player.</li>
+                        <li>You can skip a room by clicking the "Avoid Room" button. You cannot skip a room twice in a row.</li>
+                        <li>Health potions can be used to restore health to the player.</li>
+                        <li>Complete the level to advance</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="leaderboard">
+                <h3>High Scores</h3>
+                <div id="highScores"></div>
+            </div>
+        </div>
+    </div>
+    <script src="game.js"></script>
+    <script src="ui.js"></script>
+</body>
+</html> 
