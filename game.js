@@ -227,7 +227,16 @@ class ScoundrelGame {
         
         this.avoidedLastRoom = false;
         this.cardsHandledInRoom = 0;
-        return this.drawRoom();
+        
+        // Use drawRoom method instead of manually adding cards
+        // This ensures consistent behavior with the rest of your game
+        this.drawRoom();
+        
+        // Check for game over condition
+        if (this.room.length === 0 && this.dungeon.length === 0) {
+            this.gameOver = true;
+            this.victory = true;
+        }
     }
 
     isGameOver() {

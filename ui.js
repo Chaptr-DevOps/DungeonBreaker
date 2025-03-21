@@ -329,9 +329,13 @@ class ScoundrelUI {
         try {
             this.game.handleCard(index);
             this.cardsHandledThisTurn++;
+            // Update the game counter too
+            this.game.cardsHandledInRoom = this.cardsHandledThisTurn;
             this.updateUI();
 
-            if (this.cardsHandledThisTurn === 3) {
+            // Check if we need to start a new turn - FIXED conditions
+            if (this.cardsHandledThisTurn >= 3 || this.game.room.length === 0) {
+                console.log("Starting new turn because handled cards =", this.cardsHandledThisTurn, "or room length =", this.game.room.length);
                 this.mustClearNextRoom = false;
                 setTimeout(() => this.startNewTurn(), 1000);
             }
@@ -552,10 +556,12 @@ class ScoundrelUI {
         const mobileHealthBar = document.getElementById('mobileHealthBar');
         const mobileLevel = document.getElementById('mobileLevel');
         const mobileLives = document.getElementById('mobileLives');
+        const mobileDungeonCount = document.getElementById('mobileDungeonCount');
         
         if (mobileHealth) mobileHealth.textContent = this.game.health;
         if (mobileLevel) mobileLevel.textContent = this.level;
         if (mobileLives) mobileLives.textContent = this.lives;
+        if (mobileDungeonCount) mobileDungeonCount.textContent = this.game.dungeon.length;
         
         // Update the mobile health bar
         if (mobileHealthBar) {
@@ -589,11 +595,13 @@ class ScoundrelUI {
         const maxHealth = document.getElementById('health').nextElementSibling.textContent;
         const level = document.getElementById('currentLevel').textContent;
         const lives = document.getElementById('livesRemaining').textContent;
+        const dungeonCount = document.getElementById('dungeonCount').textContent;
         
         // Update mobile header
         document.getElementById('mobileHealth').textContent = health;
         document.getElementById('mobileLevel').textContent = level;
         document.getElementById('mobileLives').textContent = lives;
+        document.getElementById('mobileDungeonCount').textContent = dungeonCount;
         
         // Update mobile health bar
         const healthPercent = (parseInt(health) / parseInt(maxHealth)) * 100;
@@ -622,58 +630,29 @@ class ScoundrelUI {
 
 // Start a new instance when the page loads
 window.addEventListener('load', () => {
-    new ScoundrelUI();
+    window.scoundrelUI = new ScoundrelUI();
 });
 
-// Replace the tab system with this corrected version
-function setupMobileTabs() {
+// Add just this simple tab function
+document.addEventListener('DOMContentLoaded', function() {
     // Only for mobile
     if (window.innerWidth > 768) return;
     
     const tabs = document.querySelectorAll('.mobile-tab');
-    const tabContents = document.querySelectorAll('.tab-content');
-    
-    // Make sure only the game tab is visible initially
-    tabContents.forEach(content => {
-        content.classList.remove('active');
-    });
-    document.getElementById('gameTab').classList.add('active');
     
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
-            // Deactivate all tabs
-            tabs.forEach(t => t.classList.remove('active'));
+            // Update tab styling
+            document.querySelectorAll('.mobile-tab').forEach(t => 
+                t.classList.remove('active'));
             tab.classList.add('active');
             
-            // Hide all content sections
-            tabContents.forEach(content => {
-                content.classList.remove('active');
-            });
+            // Update content visibility
+            document.querySelectorAll('.tab-content').forEach(content => 
+                content.classList.remove('active'));
             
-            // Show only the clicked tab content
             const tabId = tab.getAttribute('data-tab') + 'Tab';
             document.getElementById(tabId).classList.add('active');
         });
     });
-}
-
-// Call this when the page loads
-document.addEventListener('DOMContentLoaded', setupMobileTabs);
-window.addEventListener('resize', setupMobileTabs);
-
-// Make sure the mobile avoid button calls the same handler
-function setupAvoidButtons() {
-    const mainAvoidButton = document.getElementById('avoidRoom');
-    const mobileAvoidButton = document.getElementById('avoidRoom-mobile');
-    
-    if (mobileAvoidButton && mainAvoidButton) {
-        // Get the click handler from the main button
-        const mainButtonClickHandler = mainAvoidButton.onclick;
-        
-        // Set the same handler for the mobile button
-        mobileAvoidButton.onclick = mainButtonClickHandler;
-    }
-}
-
-// Call this after the page loads
-document.addEventListener('DOMContentLoaded', setupAvoidButtons);
+});
