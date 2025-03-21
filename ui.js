@@ -53,6 +53,8 @@ class ScoundrelUI {
         this.updateHighScores();
         this.updateRulesForLevel();
         this.checkGameOver();
+        this.updateMobileUI();
+        this.syncMobileUI();
     }
 
     updateHealth() {
@@ -82,16 +84,28 @@ class ScoundrelUI {
         const roomElement = document.getElementById('room');
         roomElement.innerHTML = '';
 
+        console.log("Cards in room:", this.game.room.length);
+        
+        if (this.game.room.length === 0) {
+            roomElement.innerHTML = '<div style="color:white;text-align:center;padding:20px;">Loading cards...</div>';
+            return;
+        }
+
         this.game.room.forEach((card, index) => {
             const cardElement = this.createCardElement(card, index);
             roomElement.appendChild(cardElement);
         });
+        
+        // No need for setTimeout or extra styling - let the cards render normally
     }
 
     createCardElement(card, index) {
         const div = document.createElement('div');
         div.className = `card ${card.suit}`;
+        
+        // Always use the beautiful original SVG cards
         div.innerHTML = this.createCardSVG(card);
+        
         div.addEventListener('click', () => this.handleCardClick(index));
         return div;
     }
@@ -528,9 +542,138 @@ class ScoundrelUI {
             specialCardsElement.appendChild(ul);
         }
     }
+
+    updateMobileUI() {
+        // Only for mobile
+        if (window.innerWidth > 768) return;
+        
+        // Update mobile header info
+        const mobileHealth = document.getElementById('mobileHealth');
+        const mobileHealthBar = document.getElementById('mobileHealthBar');
+        const mobileLevel = document.getElementById('mobileLevel');
+        const mobileLives = document.getElementById('mobileLives');
+        
+        if (mobileHealth) mobileHealth.textContent = this.game.health;
+        if (mobileLevel) mobileLevel.textContent = this.level;
+        if (mobileLives) mobileLives.textContent = this.lives;
+        
+        // Update the mobile health bar
+        if (mobileHealthBar) {
+            const healthPercentage = (this.game.health / this.game.maxHealth) * 100;
+            mobileHealthBar.style.width = `${healthPercentage}%`;
+            
+            // Change color based on health percentage
+            if (healthPercentage <= 25) {
+                mobileHealthBar.style.background = '#ff4444';
+            } else if (healthPercentage <= 50) {
+                mobileHealthBar.style.background = '#ffbb33';
+            } else {
+                mobileHealthBar.style.background = '#00C851';
+            }
+        }
+        
+        // Sync avoid button states
+        const mainAvoidButton = document.getElementById('avoidRoom');
+        const mobileAvoidButton = document.getElementById('avoidRoom-mobile');
+        
+        if (mobileAvoidButton && mainAvoidButton) {
+            mobileAvoidButton.disabled = mainAvoidButton.disabled;
+        }
+    }
+
+    syncMobileUI() {
+        // Only for mobile
+        if (window.innerWidth > 768) return;
+        
+        const health = document.getElementById('health').textContent;
+        const maxHealth = document.getElementById('health').nextElementSibling.textContent;
+        const level = document.getElementById('currentLevel').textContent;
+        const lives = document.getElementById('livesRemaining').textContent;
+        
+        // Update mobile header
+        document.getElementById('mobileHealth').textContent = health;
+        document.getElementById('mobileLevel').textContent = level;
+        document.getElementById('mobileLives').textContent = lives;
+        
+        // Update mobile health bar
+        const healthPercent = (parseInt(health) / parseInt(maxHealth)) * 100;
+        document.getElementById('mobileHealthBar').style.width = healthPercent + '%';
+        
+        // Sync avoid buttons
+        const mainAvoidButton = document.getElementById('avoidRoom');
+        const mobileAvoidButton = document.getElementById('avoidRoom-mobile');
+        
+        if (mobileAvoidButton && mainAvoidButton) {
+            mobileAvoidButton.disabled = mainAvoidButton.disabled;
+        }
+    }
+
+    // This should be a method of the ScoundrelUI class, not a nested function
+    ensureCardDisplay() {
+        // Fix any display issues for new cards
+        document.querySelectorAll('.room .card').forEach(card => {
+            // Make sure cards are visible and clickable
+            card.style.display = '';
+            card.style.opacity = '';
+            card.style.pointerEvents = 'auto';
+        });
+    }
 }
 
 // Start a new instance when the page loads
 window.addEventListener('load', () => {
     new ScoundrelUI();
 });
+
+// Replace the tab system with this corrected version
+function setupMobileTabs() {
+    // Only for mobile
+    if (window.innerWidth > 768) return;
+    
+    const tabs = document.querySelectorAll('.mobile-tab');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    // Make sure only the game tab is visible initially
+    tabContents.forEach(content => {
+        content.classList.remove('active');
+    });
+    document.getElementById('gameTab').classList.add('active');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            // Deactivate all tabs
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            // Hide all content sections
+            tabContents.forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Show only the clicked tab content
+            const tabId = tab.getAttribute('data-tab') + 'Tab';
+            document.getElementById(tabId).classList.add('active');
+        });
+    });
+}
+
+// Call this when the page loads
+document.addEventListener('DOMContentLoaded', setupMobileTabs);
+window.addEventListener('resize', setupMobileTabs);
+
+// Make sure the mobile avoid button calls the same handler
+function setupAvoidButtons() {
+    const mainAvoidButton = document.getElementById('avoidRoom');
+    const mobileAvoidButton = document.getElementById('avoidRoom-mobile');
+    
+    if (mobileAvoidButton && mainAvoidButton) {
+        // Get the click handler from the main button
+        const mainButtonClickHandler = mainAvoidButton.onclick;
+        
+        // Set the same handler for the mobile button
+        mobileAvoidButton.onclick = mainButtonClickHandler;
+    }
+}
+
+// Call this after the page loads
+document.addEventListener('DOMContentLoaded', setupAvoidButtons);

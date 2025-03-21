@@ -278,100 +278,376 @@
             flex: 1;
         }
 
-        /* Fix mobile layout */
+        /* Clean mobile layout - replace all existing mobile CSS with this */
         @media screen and (max-width: 768px) {
-            /* Improved mobile layout */
-            body {
-                padding-bottom: 20px; /* Add padding to bottom of page */
+            /* Fix horizontal overflow */
+            body, html {
+                width: 100%;
+                max-width: 100vw;
+                overflow-x: hidden;
+                box-sizing: border-box;
             }
             
+            /* Make sure all content fits within viewport width */
             .game-container {
-                flex-direction: column;
-                padding: 10px;
-                gap: 5px;
-                margin-top: 0;
-                min-height: auto; /* Remove fixed height */
-                max-height: none; /* Allow content to expand */
+                width: 100%;
+                max-width: 100%;
+                padding: 0;
+                margin: 0;
+                border-radius: 0;
+                box-sizing: border-box;
+                overflow-x: hidden;
             }
             
-            /* Reduce size of elements to fit on screen */
-            .status, .weapon-area, .rules-area, .leaderboard {
+            /* Fix padding on tab content */
+            .tab-content {
+                padding: 10px;
+                box-sizing: border-box;
+                overflow-x: hidden;
+            }
+            
+            /* Fix weapon display layout */
+            .weapon-area > div {
+                display: flex;
+                flex-direction: row; /* Change back to row to put slain next to weapon */
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            /* Give weapon section fixed width */
+            .weapon-area h4 {
                 margin: 5px 0;
+            }
+            
+            /* Weapon and slain layout */
+            #equippedWeapon {
+                width: auto;
+                text-align: left;
+            }
+            
+            /* Set fixed widths for balance */
+            .weapon-section, .weapon-area > div > div:first-child {
+                width: 30%; /* Give weapon section 30% of the space */
+                flex-shrink: 0;
+            }
+            
+            .monsters-section, .weapon-area > div > div:last-child {
+                width: 70%; /* Give monsters section 70% of the space */
+            }
+            
+            /* Center the monsters-on-weapon display */
+            .monsters-on-weapon {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: flex-start; /* Start from left side */
+                gap: 5px;
+                margin-top: 5px;
+            }
+            
+            /* Smaller slain monster cards for better fit */
+            .monsters-on-weapon .card {
+                width: 45px;
+                height: 68px;
+                margin-right: 0;
+            }
+            
+            /* Fix card margin to prevent overflow */
+            .card {
+                margin: 0;
+            }
+            
+            /* Fix the avoid button width */
+            .avoid-button {
+                width: calc(100% - 20px);
+                margin: 10px auto;
+                display: block;
+            }
+            
+            /* Ensure the mobile header stays within bounds */
+            .mobile-header {
+                width: 100%;
+                box-sizing: border-box;
                 padding: 8px;
             }
             
-            /* Make cards smaller on mobile */
+            /* Fix the room layout for proper card display */
+            .room {
+                display: flex;
+                flex-wrap: nowrap; /* Prevent wrapping to second row */
+                justify-content: center;
+                gap: 2px; /* Reduce gap between cards from 8px to 2px */
+                margin: 10px 0;
+                padding: 5px; /* Reduce padding for more space */
+                width: 100%;
+                box-sizing: border-box;
+                min-height: 130px;
+            }
+            
+            /* Slightly reduce card size if needed */
+            .room .card {
+                width: 80px; /* Down from 80px */
+                height: 120px; /* Keep proportional */
+                margin: 0 !important; /* Remove any margins */
+            }
+            
+            /* Make sure room container doesn't add extra space */
+            .room {
+                border: none !important; /* Remove border that takes up space */
+            }
+            
+            /* Reset card styles to allow for proper rendering */
             .card {
                 width: 80px;
                 height: 120px;
-                margin: 0;
-                justify-self: center;
+                margin: 0 5px 5px 0;
+                background: transparent;
+                cursor: pointer;
+                transform: none; /* Start with no transform */
+                transition: transform 0.3s, box-shadow 0.3s;
             }
             
-            /* Ensure each card stretches appropriately */
+            /* Keep the hover effect, but don't force it in the base style */
+            .card:hover {
+                transform: translateY(-8px) rotateY(5deg);
+                box-shadow: -8px 8px 16px rgba(0,0,0,0.5), -2px 2px 4px rgba(0,0,0,0.3);
+            }
+            
+            /* Remove the important flags that are preventing dynamic updates */
+            .room .card {
+                display: block;
+                opacity: 1;
+                visibility: visible;
+                pointer-events: auto;
+            }
+            
+            /* Make card SVGs display properly */
             .card svg {
                 width: 100%;
                 height: 100%;
+                display: block;
+            }
+            
+            /* Reset the problematic styles */
+            body {
+                box-sizing: border-box;
+                width: 100%;
+                overflow-x: hidden;
+                padding: 0;
+                margin: 0;
+            }
+            
+            .game-container {
+                width: 100%;
+                max-width: 100%;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                flex-direction: column;
+            }
+            
+            /* Fix the tab layout - make them horizontal buttons */
+            .mobile-tabs {
+                display: flex;
+                flex-direction: row;
+                height: auto;
+                width: 100%;
+                margin: 0;
+            }
+            
+            .mobile-tab {
+                flex: 1 1 auto;
+                height: 40px;
+                padding: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 14px;
+                margin: 0;
+                border-radius: 0;
+            }
+            
+            /* Ensure the content takes the rest of the space */
+            .tab-content {
+                display: none !important;
+                width: 100%;
+            }
+            
+            .tab-content.active {
+                display: block !important;
+            }
+            
+            /* Hide duplicate elements */
+            #gameTab .status,
+            #gameTab #avoidRoom,
+            #statusTab .room,
+            #statusTab .weapon-area,
+            #statusTab #avoidRoom-mobile {
+                display: none !important;
+            }
+            
+            /* Make the mobile header only show in game tab */
+            .mobile-header {
+                display: flex;
+                margin-bottom: 10px;
+            }
+            
+            /* Make tabs look better */
+            .mobile-tabs {
+                position: sticky;
+                top: 0;
+                z-index: 100;
+                background: #333;
+            }
+            
+            /* Clean up weapon area */
+            .weapon-area {
+                background: rgba(40, 40, 40, 0.9);
+                padding: 10px;
+                border-radius: 5px;
+                margin: 10px 0;
+            }
+            
+            .weapon-area > div {
+                display: flex;
+                justify-content: space-between;
+            }
+            
+            /* Make slain monsters display better */
+            .monsters-on-weapon {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 5px;
+                margin-top: 5px;
             }
             
             .monsters-on-weapon .card {
-                width: 60px;
-                height: 90px;
-                margin-right: -25px;
+                width: 50px;
+                height: 75px;
             }
             
-            /* Adjust typography */
-            h2 {
-                font-size: 1.2rem;
-                margin: 5px 0;
-            }
-            
-            h3, h4 {
-                font-size: 1rem;
-                margin: 5px 0;
-            }
-            
-            p, li {
-                font-size: 0.9rem;
-                margin: 3px 0;
-            }
-            
-            /* Make rules more compact */
-            .rules-content ul {
-                padding-left: 15px;
-                margin: 3px 0;
-            }
-            
-            /* Ensure room doesn't overflow */
-            .room {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                grid-template-rows: 1fr 1fr;
-                gap: 5px;
-                justify-items: center;
-                align-items: center;
+            /* Better avoid button */
+            .avoid-button {
                 width: 100%;
-                margin: 5px auto;
+                padding: 10px;
+                background: #673ab7;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                margin-top: 10px;
+                font-size: 16px;
             }
             
-            /* Make the health bar smaller */
-            .health-bar-container {
-                height: 15px;
-                margin: 5px 0;
+            /* Make the health bar container wider */
+            .mobile-health-bar-container {
+                width: 100px;
+                height: 10px;
+                background: #444;
+                border-radius: 5px;
+                overflow: hidden;
+                margin-top: 4px;
             }
             
-            /* Add scrolling for the game container if needed */
-            .game-container {
-                overflow-y: auto;
+            /* Improve the mobile header layout to accommodate wider health bar */
+            .mobile-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                background: #333;
+                padding: 10px;
+                border-radius: 5px;
+                margin-bottom: 10px;
+            }
+            
+            /* Give more space to the health section */
+            .mobile-header > div:first-child {
+                flex: 1.5;
+            }
+            
+            .mobile-header > div:nth-child(2),
+            .mobile-header > div:nth-child(3) {
+                flex: 0.75;
+                text-align: center;
+            }
+            
+            /* Add these styles to ensure cards are always visible */
+            .room .card {
+                display: block !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+                width: 80px !important;
+                height: 120px !important;
+                margin: 0 5px 5px 0 !important;
+                background: transparent !important;
+                transform: none !important; /* Reset any transforms */
+                box-shadow: none !important; /* Reset any shadows */
+                pointer-events: auto !important; /* Ensure clickable */
+            }
+            
+            /* Make the room always visible and properly laid out */
+            .room {
+                display: flex !important;
+                flex-wrap: wrap !important;
+                justify-content: center !important;
+                align-items: center !important;
+                min-height: 130px !important; /* Ensure space for cards */
+                padding: 10px !important;
+                margin: 10px 0 !important;
+                visibility: visible !important;
+                border: 1px solid #333 !important; /* Add border to see the room area */
+            }
+            
+            /* Make sure card SVGs display correctly */
+            .card svg {
+                width: 100% !important;
+                height: 100% !important;
+                display: block !important;
+            }
+            
+            /* Reduce any padding around the room container */
+            #gameTab {
+                padding: 8px;
+            }
+            
+            /* Make cards smaller to ensure they fit in one row */
+            .room .card {
+                width: 65px !important; /* Smaller width */
+                height: 95px !important; /* Proportional height */
+                margin: 0 1px !important; /* Minimal margin */
+            }
+            
+            /* Fix room layout to keep cards in one row */
+            .room {
+                display: flex !important;
+                flex-wrap: nowrap !important; /* Prevent wrapping */
+                justify-content: center !important;
+                gap: 1px !important; /* Minimal gap */
+                overflow-x: visible !important;
+                padding: 5px 2px !important; /* Reduce horizontal padding */
+            }
+            
+            /* Ensure cards display properly at smaller size */
+            .card svg {
+                width: 100% !important;
+                height: 100% !important;
+            }
+            
+            /* Reduce any extra padding in the game tab */
+            #gameTab {
+                padding: 5px !important;
+            }
+            
+            /* Make header more compact */
+            .mobile-header {
+                padding: 5px 8px !important;
+                margin-bottom: 5px !important;
             }
         }
         
-        /* Desktop only styles */
+        /* Desktop only */
         @media screen and (min-width: 769px) {
-            /* Always hide mobile elements on desktop */
-            .mobile-weapon-area, 
-            .avoid-button-container {
-                display: none !important;
+            .mobile-tabs,
+            .mobile-header {
+                display: none;
             }
         }
 
@@ -412,64 +688,211 @@
                 margin: 2px !important;
             }
         }
+
+        /* Better mobile status bar styling */
+        .mobile-status-bar {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(40, 40, 40, 0.9);
+            padding: 8px 10px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            height: auto;
+        }
+
+        .mobile-status-item {
+            padding: 0 5px;
+        }
+
+        /* New mobile-specific styles */
+        .mobile-section-title {
+            font-size: 16px;
+            margin: 8px 0;
+            text-align: center;
+        }
+
+        .mobile-weapon-section {
+            background: rgba(50, 50, 50, 0.8);
+            padding: 8px;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+
+        .equipped-weapon-section {
+            width: 80px;
+        }
+
+        .monster-section {
+            flex: 1;
+        }
+
+        .mobile-avoid-button {
+            width: 100%;
+            padding: 10px;
+            background: #673ab7;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 8px 0;
+        }
+
+        .mobile-avoid-button:disabled {
+            background: #555;
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        /* Better mobile tab styling */
+        .mobile-tabs {
+            display: flex;
+            width: 100%;
+            background: rgba(30, 30, 30, 0.9);
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .mobile-tab {
+            flex: 1;
+            text-align: center;
+            padding: 10px 0;
+            background: rgba(60, 60, 60, 0.8);
+            color: #ddd;
+            font-weight: bold;
+            border: none;
+            font-size: 14px;
+        }
+
+        .mobile-tab.active {
+            background: #673ab7;
+            color: white;
+        }
+
+        /* Add these styles for the mobile health bar */
+        .mobile-health {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .mobile-health-bar-container {
+            width: 60px;
+            height: 8px;
+            background: #444;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .mobile-health-bar {
+            height: 100%;
+            background: linear-gradient(to right, #ff4444, #ff6b6b);
+            width: 100%; /* Will be updated by JS */
+        }
+
+        /* Make the header more compact */
+        .mobile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #333;
+            padding: 8px 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* Improve consistency in tab-content areas */
+        @media screen and (max-width: 768px) {
+            .tab-content {
+                width: 100%;
+                box-sizing: border-box;
+            }
+            
+            /* Consistent margins */
+            .weapon-area, .room, .mobile-header, .mobile-tabs, .avoid-button {
+                margin-left: 0;
+                margin-right: 0;
+            }
+            
+            /* Make the avoid button not flow outside container */
+            .avoid-button {
+                width: 100%;
+                box-sizing: border-box;
+            }
+            
+            /* Ensure monsters are clearly visible */
+            .monsters-on-weapon {
+                margin-top: 5px;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="game-container">
-        <!-- 1. Health and level section -->
-        <div class="left-panel">
+        <!-- Mobile tabs -->
+        <div class="mobile-tabs">
+            <button class="mobile-tab active" data-tab="game">Play</button>
+            <button class="mobile-tab" data-tab="status">Status</button>
+            <button class="mobile-tab" data-tab="rules">Rules</button>
+        </div>
+        
+        <!-- Game tab - PLAY tab -->
+        <div class="center-panel tab-content active" id="gameTab">
+            <!-- Mobile header with key info -->
+            <div class="mobile-header">
+                <div>
+                    HP: <span id="mobileHealth">20</span>/20
+                    <div class="mobile-health-bar-container">
+                        <div class="mobile-health-bar" id="mobileHealthBar" style="width: 100%"></div>
+                    </div>
+                </div>
+                <div>Level: <span id="mobileLevel">1</span></div>
+                <div>Lives: <span id="mobileLives">2</span></div>
+            </div>
+            
+            <!-- Room cards -->
+            <div class="room" id="room"></div>
+            
+            <!-- Clean weapon display -->
+            <div class="weapon-area">
+                <div>
+                    <div>
+                        <h4>Weapon:</h4>
+                        <div id="equippedWeapon"></div>
+                    </div>
+                    <div>
+                        <h4>Slain:</h4>
+                        <div class="monsters-on-weapon" id="monstersOnWeapon"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Avoid button -->
+            <button id="avoidRoom-mobile" class="avoid-button">Avoid Room</button>
+        </div>
+        
+        <!-- Status tab -->
+        <div class="left-panel tab-content" id="statusTab">
             <div class="status">
                 <h2>Health: <span id="health">20</span>/20</h2>
                 <div class="health-bar-container">
                     <div class="health-bar" id="healthBar" style="width: 100%"></div>
                 </div>
-                <p>Cards in Dungeon: <span id="dungeonCount">0</span></p>
+                <p>Cards in Dungeon: <span id="dungeonCount">40</span></p>
                 <p class="level-display">Level: <span id="currentLevel">1</span></p>
-                <p class="lives-display">Lives: <span id="livesRemaining">3</span></p>
+                <p class="lives-display">Lives: <span id="livesRemaining">2</span></p>
             </div>
             <button id="avoidRoom">Avoid Room</button>
             <div id="gameMessages"></div>
         </div>
         
-        <!-- For mobile layout - will be hidden on desktop -->
-        <div class="mobile-weapon-area">
-            <div class="weapon-container">
-                <div class="weapon-section">
-                    <h4>Equipped Weapon:</h4>
-                    <div id="mobileEquippedWeapon"></div>
-                </div>
-                <div class="monsters-section">
-                    <h4>Monsters Slain:</h4>
-                    <div class="monsters-on-weapon" id="mobileMonstersOnWeapon"></div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- 3. Current room section -->
-        <div class="center-panel">
-            <h2>Current Room</h2>
-            <div class="room" id="room"></div>
-            <div class="weapon-area">
-                <div class="weapon-container">
-                    <div class="weapon-section">
-                        <h4>Equipped Weapon:</h4>
-                        <div id="equippedWeapon"></div>
-                    </div>
-                    <div class="monsters-section">
-                        <h4>Monsters Slain:</h4>
-                        <div class="monsters-on-weapon" id="monstersOnWeapon"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <!-- For mobile layout - will be hidden on desktop -->
-        <div class="avoid-button-container">
-            <button id="avoidRoom-mobile">Avoid Room</button>
-        </div>
-        
-        <!-- 5. Game rules and high scores -->
-        <div class="right-panel">
+        <!-- Rules tab -->
+        <div class="right-panel tab-content" id="rulesTab">
             <div class="rules-area">
                 <h3>Game Rules</h3>
                 <div class="rules-content">
